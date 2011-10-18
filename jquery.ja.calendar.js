@@ -167,9 +167,22 @@
 						
 						if (+thisDate == +todayDate)
 							$thisDay.addClass("today");
-							
-						if (+thisDate == +$target.data("selectedDate.jaCalendar"))
-							$thisDay.addClass("selected");
+						
+						switch (settings.selectionMode)
+						{
+							case "single":
+								if (+thisDate == +$target.data("selectedDate.jaCalendar"))
+									$thisDay.addClass("selected");
+							break;
+							case "range":
+								if ($target.data("selectedDate.jaCalendar") !== undefined)
+								{
+									var range = $target.data("selectedDate.jaCalendar");
+									if (+range.from <= +thisDate && +thisDate <= +range.to)
+										$thisDay.addClass("selected");
+								}
+							break;
+						}
 						
 						var sdIndex = isSpecialDate(thisDate);
 
@@ -187,10 +200,8 @@
 					$("tr:empty", $table).remove();
 					$("td.date:empty", $table).removeClass("date");	
 
-					$("td.date.selectable").click(function() {
-						$target.data("selectedDate.jaCalendar", $(this).data("date"));
-						$("td.date", $target).removeClass("selected");
-						$(this).addClass("selected");
+					$("td.date.selectable").click(function(e) {
+						$.fn.jaCalendar.selectDate.apply($(this), [$target, settings]);
 					});
 				}
 	
@@ -330,6 +341,7 @@
 		highlightToday: true,
 		blurWeekend: true,
 		specialDates: [],
+		selectionMode: "single",
 		todayButtonLabel: "Hoy",
 		days: ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"],
 		months: ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
@@ -402,5 +414,51 @@
 			weekRowArray.push($weekRow);
 		}		
 		return weekRowArray;
+	}
+	
+	$.fn.jaCalendar.selectDate = function($calendar, settings)
+	{
+		switch (settings.selectionMode.toLowerCase())
+		{
+			case "single":
+				$calendar.data("selectedDate.jaCalendar", $(this).data("date"));
+				$("td.date", $calendar).removeClass("selected");
+				$(this).addClass("selected");
+			break;
+			case "range":
+				if ($calendar.data("selectedDate.jaCalendar") === undefined || ($calendar.data("selectedDate.jaCalendar").from != null && $calendar.data("selectedDate.jaCalendar").to != null))
+				{
+					$calendar.data("selectedDate.jaCalendar", {from: $(this).data("date"), to: null});
+					$("td.date", $calendar).removeClass("selected");
+					$(this).addClass("selected");
+				}
+				else
+				{
+					var fromDate = $calendar.data("selectedDate.jaCalendar").from;
+					var $days = $("td.date", $calendar);
+					var $firstDay = $("td.date.selected", $calendar);
+					var fromIndex = $days.index($firstDay);
+					var toIndex = $days.index($(this));
+					
+					if (fromIndex < 0) fromIndex = 0;
+					
+					for (var i = fromIndex;
+							 i <= toIndex;
+							 i++)
+					{
+						if (!$($days[i]).hasClass("selectable"))
+						{
+							$calendar.data("selectedDate.jaCalendar", {from: fromDate, to: $($days[i - 1]).data("date")});
+							break;
+						}
+						
+						$($days[i]).addClass("selected");
+					}
+					
+					$calendar.data("selectedDate.jaCalendar", {from: $calendar.data("selectedDate.jaCalendar").from, to: $($days[i]).data("date")});
+				}
+			break;
+		}
+		console.info($calendar.data("selectedDate.jaCalendar"));
 	}
 })(jQuery);
