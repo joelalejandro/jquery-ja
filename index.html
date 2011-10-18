@@ -1,0 +1,39 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<title>:: San Matías Propiedades ::</title>
+	<link rel="stylesheet" href="jquery.ja.calendar.css" />
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>	
+	<script type="text/javascript" src="jquery.ja.calendar.js"></script>
+	<style type="text/css">
+		.happydays {background: fuchsia;}
+		.saddays {background: #09C;}
+	</style>
+</head>
+<body>
+	<div id="calendar"></div>
+	<script type="text/javascript">
+		$("#calendar").jaCalendar({
+			shortDayNames: true,
+			month: 10,
+			year: 2011,
+			leadingZero: true,
+			highlightToday: false,
+			blurWeekend: true,
+			specialDates: [
+				{
+					dateClass: "happydays",
+					selectable: false,
+					dates: ['17/10/2011', '19/10/2011', '20/10/2011', '04/11/2011']
+				},
+				{
+					dateClass: "saddays",
+					selectable: false,
+					dates: ['03/10/2011']
+				}
+			]
+		});
+	</script>
+</body>
+</html>
