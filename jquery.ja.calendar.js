@@ -233,7 +233,7 @@
 			prevMonth: function()
 			{
 				var newSettings = $(this).data("settings.jaCalendar");
-				if (newSettings.month > 0)
+				if (newSettings.month > 1)
 				{
 					newSettings.month--;
 				}
