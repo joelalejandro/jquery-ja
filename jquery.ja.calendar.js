@@ -116,6 +116,7 @@
 				var dateBase = new Date();
 				var year = dateBase.getFullYear();
 				var month = dateBase.getMonth();
+				var todayDate = new Date(year, month, dateBase.getDate());
 				var selectedMonth = settings.month - 1;
 				var selectedYear = settings.year;
 				var specialDates = [];
@@ -131,7 +132,6 @@
 
 				var isSpecialDate = function(aDate)
 				{
-					console.info(aDate);
 					for (var i = 0; i < specialDates.length; i++)
 						if (+specialDates[i].date == +aDate)
 						 	return i;
@@ -173,7 +173,7 @@
 					        .data("date", thisDate)
 					        .addClass("selectable");
 					
-					if (d == dateBase.getDate()) $thisDay.addClass("today");
+					if (+thisDate == +todayDate) $thisDay.addClass("today");
 
 					var sdIndex = isSpecialDate(thisDate);
 
@@ -202,6 +202,10 @@
 				$("button.prev-month", $target).click(function() {methods.prevMonth.apply($target);});
 				$("button.next-month", $target).click(function() {methods.nextMonth.apply($target);});
 				
+				$.each($.fn.jaCalendar.footer(settings), function(i, obj) { $(obj).appendTo($table); });
+				
+				$("button.today-button", $target).click(function() {methods.now.apply($target);});
+				
 				$target.data("settings.jaCalendar", settings);
 			},
 			getDate: function()
@@ -215,7 +219,6 @@
 			nextMonth: function()
 			{
 				var newSettings = $(this).data("settings.jaCalendar")
-				console.info(newSettings);
 				if (newSettings.month < 12)
 				{
 					newSettings.month++;
@@ -287,10 +290,13 @@
 		shortDayNames: true,
 		month: new Date().getMonth(),
 		year: new Date().getFullYear(),
+		allowChangeMonth: true,
+		showTodayButton: true,
 		leadingZero: false,
 		highlightToday: true,
 		blurWeekend: true,
 		specialDates: [],
+		todayButtonLabel: "Hoy",
 		days: ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"],
 		months: ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
 	};
@@ -320,6 +326,22 @@
 		});
 
 		return [$header, $tr];
+	};
+	
+	$.fn.jaCalendar.footer = function(settings)
+	{
+		var $footer = $newRow().addClass("footer");
+		var $td = $("<td colspan='7' />");
+		if (settings.showTodayButton)
+		{
+			var $todayBtn = $("<button class='today-button'>" + settings.todayButtonLabel + "</button>");
+			$todayBtn.appendTo($td);
+		}
+		if ($td.children().length > 0)
+		{
+			$td.appendTo($footer);
+			return [$footer];
+		}
 	}
 
 	$.fn.jaCalendar.weekdays = function(weeksInMonth)
