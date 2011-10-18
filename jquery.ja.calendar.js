@@ -139,73 +139,107 @@
 					return -1;
 				}
 
-				$target.empty();
-
-				var $table = $("<table class='calendar' />");
-				$.each($.fn.jaCalendar.header(settings, selectedYear, selectedMonth), function(i, obj) { $(obj).appendTo($table); });
-
 				var daysInMonth = new Date(selectedYear, selectedMonth+1, 0).getDate();
 				var weeksInMonth = getWeeksInMonth(selectedYear, selectedMonth);
-
-				$.each($.fn.jaCalendar.weekdays(weeksInMonth), function(i, obj) { $(obj).appendTo($table); });
-				
-				$table.appendTo($target);
-
 				var firstDayOfMonth = new Date(selectedYear, selectedMonth, 1);
 				var firstWeekday = firstDayOfMonth.getDay();
 
-				var $days = $("td.date");
-				var $firstDay = $("td.date.day" + firstWeekday + ".week1");
-				
-				for (var i = $days.index($firstDay),
-						 d = 1,
-						 x = 0;
-						 i < $days.length,
-						 d < daysInMonth,
-						 x < daysInMonth;
-						 i++,
-						 d++,
-						 x++)
+				var renderDays = function()
 				{
-					var thisDate = new Date(selectedYear, selectedMonth, d);
-					var $thisDay = $($days[i]);
-					$thisDay.html(settings.leadingZero ? (d < 10 ? '0' + d : d) : d)
-					        .data("date", thisDate)
-					        .addClass("selectable");
+					var $days = $("td.date");
+					var $firstDay = $("td.date.day" + firstWeekday + ".week1");
 					
-					if (+thisDate == +todayDate) $thisDay.addClass("today");
-
-					var sdIndex = isSpecialDate(thisDate);
-
-					if (sdIndex > -1)
+					for (var i = $days.index($firstDay),
+							 d = 1,
+							 x = 0;
+							 i < $days.length,
+							 d < daysInMonth,
+							 x < daysInMonth;
+							 i++,
+							 d++,
+							 x++)
 					{
-						$thisDay.addClass(specialDates[sdIndex].dateClass);
-						if (!specialDates[sdIndex].selectable)
-							$thisDay.removeClass("selectable");
+						var thisDate = new Date(selectedYear, selectedMonth, d);
+						var $thisDay = $($days[i]);
+						$thisDay.html(settings.leadingZero ? (d < 10 ? '0' + d : d) : d)
+								.data("date", thisDate)
+								.addClass("selectable");
+						
+						if (+thisDate == +todayDate)
+							$thisDay.addClass("today");
+							
+						if (+thisDate == +$target.data("selectedDate.jaCalendar"))
+							$thisDay.addClass("selected");
+						
+						var sdIndex = isSpecialDate(thisDate);
+
+						if (sdIndex > -1)
+						{
+							$thisDay.addClass(specialDates[sdIndex].dateClass);
+							if (!specialDates[sdIndex].selectable)
+								$thisDay.removeClass("selectable");
+						}
 					}
+
+					var $lastDay = $("td.date:contains('" + daysInMonth + "')");
+
+					$("td.date:gt(" + $days.index($lastDay) + "):empty").remove();
+					$("tr:empty", $table).remove();
+					$("td.date:empty", $table).removeClass("date");	
+
+					$("td.date.selectable").click(function() {
+						$target.data("selectedDate.jaCalendar", $(this).data("date"));
+						$("td.date", $target).removeClass("selected");
+						$(this).addClass("selected");
+					});
+				}
+	
+				if ($(".calendar", $target).length === 0)
+				{				
+					var $table = $("<table class='calendar' />");
+					$.each($.fn.jaCalendar.header(settings, selectedYear, selectedMonth), function(i, obj) {
+						$(obj).appendTo($table);
+					});
+
+					$.each($.fn.jaCalendar.weekdays(weeksInMonth), function(i, obj) {
+						$(obj).appendTo($table);
+					});
+					
+					$table.appendTo($target);
+
+					renderDays();
+
+					settings.month = selectedMonth + 1;
+					settings.year = selectedYear;
+
+					$("button.prev-month", $target).click(function() {
+						methods.prevMonth.apply($target);
+					});
+					$("button.next-month", $target).click(function() {
+						methods.nextMonth.apply($target);
+					});
+					
+					$.each($.fn.jaCalendar.footer(settings), function(i, obj) {
+						$(obj).appendTo($table);
+					});
+					
+					$("button.today-button", $target).click(function() {
+						methods.now.apply($target);
+					});
+				}
+				else
+				{
+					var $table = $(".calendar", $target);
+					$("tr.weekrow", $table).remove();
+					$.each($.fn.jaCalendar.weekdays(weeksInMonth), function(i, obj) {
+						$(obj).insertBefore('.footer');
+					});
+					renderDays();
+					$(".calendar .header-label").html(
+						$.fn.jaCalendar.period(settings, selectedYear, selectedMonth)
+					);
 				}
 
-				var $lastDay = $("td.date:contains('" + daysInMonth + "')");
-
-				$("td.date:gt(" + $days.index($lastDay) + "):empty").remove();
-				$("tr:empty", $table).remove();
-				$("td.date.selectable").click(function() {
-					$target.data("selectedDate.jaCalendar", $(this).data("date"));
-					$("td.date", $target).removeClass("selected");
-					$(this).addClass("selected");
-				});
-				$("td.date:empty", $table).removeClass("date");
-				
-				settings.month = selectedMonth + 1;
-				settings.year = selectedYear;
-
-				$("button.prev-month", $target).click(function() {methods.prevMonth.apply($target);});
-				$("button.next-month", $target).click(function() {methods.nextMonth.apply($target);});
-				
-				$.each($.fn.jaCalendar.footer(settings), function(i, obj) { $(obj).appendTo($table); });
-				
-				$("button.today-button", $target).click(function() {methods.now.apply($target);});
-				
 				$target.data("settings.jaCalendar", settings);
 			},
 			getDate: function()
@@ -301,12 +335,19 @@
 		months: ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
 	};
 
+	$.fn.jaCalendar.period = function(settings, selectedYear, selectedMonth)
+	{
+		return settings.months[selectedMonth] + " " + selectedYear;
+	};
+	
 	$.fn.jaCalendar.header = function(settings, selectedYear, selectedMonth)
 	{
 		var $header = $newRow();
 		$header.addClass("header");
 		var $headerTh = $("<th />");
-		var $headerSpan = $("<span>" + settings.months[selectedMonth] + " " + selectedYear + "</span>");
+		var $headerSpan = $("<span class='header-label'>"
+						+ $.fn.jaCalendar.period(settings, selectedYear, selectedMonth)
+						+ "</span>");
 		var $headerBtnPrev = $("<button class='prev-month'>&lt;</button>");
 		var $headerBtnNext = $("<button class='next-month'>&gt;</button>");
 		$headerBtnPrev.appendTo($headerTh);
@@ -349,10 +390,14 @@
 		var weekRowArray = [];
 		for (var w = 0; w <= weeksInMonth; w++)
 		{
-			var $weekRow = $newRow();
+			var $weekRow = $newRow().addClass("weekrow");
 			for (var j = 0; j < 7; j++)
 			{
-				$("<td class='date " + (j == 0 || j == 6 ? "weekend" : "") + " week" + (w+1) + " day" + (j) + "' />").appendTo($weekRow);
+				$("<td class='date " 
+					+ (j == 0 || j == 6 ? "weekend" : "")
+					+ " week" + (w+1)
+					+ " day" + (j) + "' />"
+				).appendTo($weekRow);
 			}
 			weekRowArray.push($weekRow);
 		}		
