@@ -1,7 +1,8 @@
 (function($) {
 	/***
 	 * Extending JavaScript's Date.parse to allow for DD/MM/YYYY (non-US formatted dates)
-	 * @url http://stackoverflow.com/questions/3003355/extending-javascripts-date-parse-to-allow-for-dd-mm-yyyy-non-us-formatted-date
+	 *
+	 * @url    http://stackoverflow.com/questions/3003355/extending-javascripts-date-parse-to-allow-for-dd-mm-yyyy-non-us-formatted-date
 	 * @author Campbeln
 	 */
 	(function() {
@@ -56,57 +57,57 @@
 	})();
 
 	/* private functions */
-		var $newRow = function() { return $("<tr />"); }
+	var $newRow = function() { return $("<tr />"); }
 
-		/**
-		http://stackoverflow.com/questions/2483719/get-weeks-in-month-through-javascript/2485172#2485172
-		**/
-		var getWeeksInMonth = function(year, month_number) {
-		    // month_number is in the range 1..12
+	/**
+	http://stackoverflow.com/questions/2483719/get-weeks-in-month-through-javascript/2485172#2485172
+	**/
+	var getWeeksInMonth = function(year, month_number) {
+		// month_number is in the range 1..12
 
-		    var firstOfMonth = new Date(year, month_number-1, 1);
-		    var lastOfMonth = new Date(year, month_number, 0);
+		var firstOfMonth = new Date(year, month_number-1, 1);
+		var lastOfMonth = new Date(year, month_number, 0);
 
-		    var used = firstOfMonth.getDay() + lastOfMonth.getDate();
+		var used = firstOfMonth.getDay() + lastOfMonth.getDate();
 
-		    return Math.ceil( used / 7);
+		return Math.ceil( used / 7);
+	}
+
+	/**
+	http://www.tek-tips.com/viewthread.cfm?qid=1577853&page=3
+	**/
+	function y2k(number) { return (number < 1000) ? number + 1900 : number; }
+	function getWeek(year,month,day) {
+		var when = new Date(year,month,day);
+		var newYear = new Date(year,0,1);
+		var modDay = newYear.getDay();
+		if (modDay == 0) modDay=6; else modDay--;
+
+		var daynum = ((Date.UTC(y2k(year),when.getMonth(),when.getDate(),0,0,0) -
+					 Date.UTC(y2k(year),0,1,0,0,0)) /1000/60/60/24) + 1;
+
+		if (modDay < 4 ) {
+			var weeknum = Math.floor((daynum+modDay-1)/7)+1;
+		}
+		else {
+			var weeknum = Math.floor((daynum+modDay-1)/7);
+			if (weeknum == 0) {
+				year--;
+				var prevNewYear = new Date(year,0,1);
+				var prevmodDay = prevNewYear.getDay();
+				if (prevmodDay == 0) prevmodDay = 6; else prevmodDay--;
+				if (prevmodDay < 4) weeknum = 53; else weeknum = 52;
+			}
 		}
 
-		/**
-		http://www.tek-tips.com/viewthread.cfm?qid=1577853&page=3
-		**/
-		function y2k(number) { return (number < 1000) ? number + 1900 : number; }
-		function getWeek(year,month,day) {
-		    var when = new Date(year,month,day);
-		    var newYear = new Date(year,0,1);
-		    var modDay = newYear.getDay();
-		    if (modDay == 0) modDay=6; else modDay--;
-
-		    var daynum = ((Date.UTC(y2k(year),when.getMonth(),when.getDate(),0,0,0) -
-		                 Date.UTC(y2k(year),0,1,0,0,0)) /1000/60/60/24) + 1;
-
-		    if (modDay < 4 ) {
-		        var weeknum = Math.floor((daynum+modDay-1)/7)+1;
-		    }
-		    else {
-		        var weeknum = Math.floor((daynum+modDay-1)/7);
-		        if (weeknum == 0) {
-		            year--;
-		            var prevNewYear = new Date(year,0,1);
-		            var prevmodDay = prevNewYear.getDay();
-		            if (prevmodDay == 0) prevmodDay = 6; else prevmodDay--;
-		            if (prevmodDay < 4) weeknum = 53; else weeknum = 52;
-		        }
-		    }
-
-		    return weeknum;
-		}		
+		return weeknum;
+	}		
     /****/	
 
 	$.fn.jaCalendar = function(method)
 	{
 		var methods = {
-			init: function(options, target)
+			init: function(options)
 			{
 				var settings = $.extend({}, $.fn.jaCalendar.defaults, options);
 				var $target = settings.target ? settings.target : $(this);
@@ -115,8 +116,8 @@
 				var dateBase = new Date();
 				var year = dateBase.getFullYear();
 				var month = dateBase.getMonth();
-				var selectedMonth = settings.month; // ? (settings.month-1) : month;
-				var selectedYear = settings.year; // ? settings.year : year;
+				var selectedMonth = settings.month - 1;
+				var selectedYear = settings.year;
 				var specialDates = [];
 				$.each(settings.specialDates, function(i, sdObject) {
 					$.each(sdObject.dates, function(j, sdate) {
@@ -130,6 +131,7 @@
 
 				var isSpecialDate = function(aDate)
 				{
+					console.info(aDate);
 					for (var i = 0; i < specialDates.length; i++)
 						if (+specialDates[i].date == +aDate)
 						 	return i;
@@ -194,7 +196,7 @@
 				});
 				$("td.date:empty", $table).removeClass("date");
 				
-				settings.month = selectedMonth;
+				settings.month = selectedMonth + 1;
 				settings.year = selectedYear;
 
 				$target.data("settings.jaCalendar", settings);
@@ -209,14 +211,15 @@
 			},
 			nextMonth: function()
 			{
-				var newSettings = $(this).data("settings.jaCalendar");
-				if (newSettings.month < 11)
+				var newSettings = $(this).data("settings.jaCalendar")
+				console.info(newSettings);
+				if (newSettings.month < 12)
 				{
 					newSettings.month++;
 				}
 				else
 				{
-					newSettings.month = 0;
+					newSettings.month = 1;
 					newSettings.year++;
 				}
 
@@ -233,7 +236,7 @@
 				}
 				else
 				{
-					newSettings.month = 11;
+					newSettings.month = 12;
 					newSettings.year--;
 				}
 				newSettings.target = this;
@@ -252,7 +255,7 @@
 			now: function()
 			{
 				var newSettings = $(this).data("settings.jaCalendar");
-				newSettings.month = new Date().getMonth();
+				newSettings.month = new Date().getMonth() + 1;
 				newSettings.year = new Date().getFullYear();
 				newSettings.target = this;
 				methods.init(newSettings);
@@ -265,11 +268,12 @@
 			return methods[method].apply(this, Array.prototype.slice.call(arguments, 1));
 		}
 
+		var mainArgs = arguments;
 		return this.each(function() {
 		    if ( methods[method] ) {
-		    	return methods[ method ].apply( this, Array.prototype.slice.call( arguments, 1 ));
+		    	return methods[ method ].apply( this, Array.prototype.slice.call( mainArgs, 1 ));
 		    } else if ( typeof method === 'object' || ! method ) {
-		    	return methods.init.apply( this, arguments );
+		    	return methods.init.apply( this, mainArgs );
 		    } else {
 		    	$.error( 'Method ' +  method + ' does not exist on jQuery.jaCalendar' );
 		    }    
