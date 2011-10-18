@@ -199,6 +199,9 @@
 				settings.month = selectedMonth + 1;
 				settings.year = selectedYear;
 
+				$("button.prev-month", $target).click(function() {methods.prevMonth.apply($target);});
+				$("button.next-month", $target).click(function() {methods.nextMonth.apply($target);});
+				
 				$target.data("settings.jaCalendar", settings);
 			},
 			getDate: function()
@@ -297,7 +300,13 @@
 		var $header = $newRow();
 		$header.addClass("header");
 		var $headerTh = $("<th />");
-		$headerTh.attr("colspan", 7).html(settings.months[selectedMonth] + " " + selectedYear);
+		var $headerSpan = $("<span>" + settings.months[selectedMonth] + " " + selectedYear + "</span>");
+		var $headerBtnPrev = $("<button class='prev-month'>&lt;</button>");
+		var $headerBtnNext = $("<button class='next-month'>&gt;</button>");
+		$headerBtnPrev.appendTo($headerTh);
+		$headerSpan.appendTo($headerTh);
+		$headerBtnNext.appendTo($headerTh);
+		$headerTh.attr("colspan", 7);
 		$headerTh.appendTo($header);
 
 		var $tr = $newRow();
