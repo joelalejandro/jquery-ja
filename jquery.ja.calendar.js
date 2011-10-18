@@ -146,8 +146,8 @@
 
 				var renderDays = function()
 				{
-					var $days = $("td.date");
-					var $firstDay = $("td.date.day" + firstWeekday + ".week1");
+					var $days = $("td.date", $target);
+					var $firstDay = $("td.date.day" + firstWeekday + ".week1", $target);
 					
 					for (var i = $days.index($firstDay),
 							 d = 1,
@@ -194,19 +194,19 @@
 						}
 					}
 
-					var $lastDay = $("td.date:contains('" + daysInMonth + "')");
+					var $lastDay = $("td.date:contains('" + daysInMonth + "')", $target);
 
-					$("td.date:gt(" + $days.index($lastDay) + "):empty").remove();
-					$("tr:empty", $table).remove();
-					$("td.date:empty", $table).removeClass("date");	
+					$("td.date:gt(" + $days.index($lastDay) + "):empty", $target).remove();
+					$("tr:empty", $target).remove();
+					$("td.date:empty", $target).removeClass("date");	
 
-					$("td.date.selectable").click(function(e) {
+					$("td.date.selectable", $target).click(function(e) {
 						$.fn.jaCalendar.selectDate.apply($(this), [$target, settings]);
 					});
 				}
-	
+				
 				if ($(".calendar", $target).length === 0)
-				{				
+				{			
 					var $table = $("<table class='calendar' />");
 					$.each($.fn.jaCalendar.header(settings, selectedYear, selectedMonth), function(i, obj) {
 						$(obj).appendTo($table);
@@ -241,12 +241,12 @@
 				else
 				{
 					var $table = $(".calendar", $target);
-					$("tr.weekrow", $table).remove();
+					$("tr.weekrow", $target).remove();
 					$.each($.fn.jaCalendar.weekdays(weeksInMonth), function(i, obj) {
-						$(obj).insertBefore('.footer');
+						$(obj).insertBefore($('.footer', $target));
 					});
 					renderDays();
-					$(".calendar .header-label").html(
+					$(".calendar .header-label", $target).html(
 						$.fn.jaCalendar.period(settings, selectedYear, selectedMonth)
 					);
 				}
@@ -320,6 +320,7 @@
 		}
 
 		var mainArgs = arguments;
+		
 		return this.each(function() {
 		    if ( methods[method] ) {
 		    	return methods[ method ].apply( this, Array.prototype.slice.call( mainArgs, 1 ));
