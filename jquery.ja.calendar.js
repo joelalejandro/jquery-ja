@@ -237,6 +237,29 @@
 					$("button.today-button", $target).click(function() {
 						methods.now.apply($target);
 					});
+					
+					$("input.year-input", $target).keypress(function(e) {
+						return "1234567890".indexOf(String.fromCharCode(e.keyCode)) > -1;
+					});
+					
+					$("button.go-period-button", $target).click(function() {
+						methods.changePeriod.apply($target, [parseInt($(".calendar .month-list", $target).val()) + 1, $(".calendar .year-input", $target).val()]);
+					});
+				
+					$target.bind("selectedDateChanged", function() {
+						if (typeof settings.selectedDateChanged === "function")
+							settings.selectedDateChanged.apply($target, [$target.data("selectedDate.jaCalendar"), settings.selectionMode]);
+					});
+
+					$target.bind("beforePeriodChange", function() {
+						if (typeof settings.beforePeriodChange === "function")
+							settings.beforePeriodChange.apply($target, [settings.currentMonth, settings.currentYear]);
+					});
+					
+					$target.bind("periodChanged", function() {
+						if (typeof settings.periodChanged === "function")
+							settings.periodChanged.apply($target, [settings.currentMonth, settings.currentYear]);
+					});
 				}
 				else
 				{
@@ -246,12 +269,22 @@
 						$(obj).insertBefore($('.footer', $target));
 					});
 					renderDays();
-					$(".calendar .header-label", $target).html(
-						$.fn.jaCalendar.period(settings, selectedYear, selectedMonth)
-					);
+					
+					if (!settings.usePeriodInput)
+					{
+						$(".calendar .header-label", $target).html(
+							$.fn.jaCalendar.period(settings, selectedYear, selectedMonth)
+						);
+					}
+					else
+					{
+						$(".calendar .month-list option[value='" + selectedMonth + "']").attr("selected", "selected");
+						$(".calendar .year-input").val(selectedYear);
+					}
 				}
 
 				$target.data("settings.jaCalendar", settings);
+				
 			},
 			getDate: function()
 			{
@@ -263,44 +296,95 @@
 			},
 			nextMonth: function()
 			{
+				$(this).trigger("beforePeriodChange");
+
 				var newSettings = $(this).data("settings.jaCalendar")
+				var changes = true;
+				
 				if (newSettings.month < 12)
 				{
 					newSettings.month++;
+					if (!newSettings.allowChangeYear && newSettings.month == 12)
+					{
+						$("button.next-month", this).hide();
+						$("button.prev-month", this).show();
+					}
+					else
+					{
+						$("button.next-month, button.prev-month", this).show();
+					}
 				}
 				else
 				{
-					newSettings.month = 1;
-					newSettings.year++;
+					if (newSettings.allowChangeYear)
+					{
+						newSettings.month = 1;
+						newSettings.year++;
+					}
+					else
+					{
+						changes = false;
+					}
 				}
 
-				newSettings.target = this;
-				methods.init(newSettings);
+				if (changes)
+				{
+					newSettings.target = this;
+					$(this).trigger("periodChanged");
+					methods.init(newSettings);
+				}
 				return this;
 			},
 			prevMonth: function()
 			{
+				$(this).trigger("beforePeriodChange");
+
 				var newSettings = $(this).data("settings.jaCalendar");
+				var changes = true;
+				
 				if (newSettings.month > 1)
 				{
 					newSettings.month--;
+					if (!newSettings.allowChangeYear && newSettings.month == 1)
+					{
+						$("button.next-month", this).show();
+						$("button.prev-month", this).hide();
+					}
+					else
+					{
+						$("button.next-month, button.prev-month", this).show();
+					}
 				}
 				else
 				{
-					newSettings.month = 12;
-					newSettings.year--;
+					if (newSettings.allowChangeYear)
+					{
+						newSettings.month = 12;
+						newSettings.year--;
+					}
+					else
+					{
+						changes = false;
+					}
 				}
-				newSettings.target = this;
-				methods.init(newSettings);
+				
+				if (changes)
+				{
+					newSettings.target = this;
+					$(this).trigger("periodChanged");
+					methods.init(newSettings);
+				}
 				return this;
 			},
 			changePeriod: function(month, year)
 			{
+				$(this).trigger("beforePeriodChange");
 				var newSettings = $(this).data("settings.jaCalendar");
 				newSettings.month = month;
 				newSettings.year = year;
 				newSettings.target = this;
 				methods.init(newSettings);
+				$(this).trigger("periodChanged");
 				return this;
 			},
 			now: function()
@@ -333,17 +417,23 @@
 	};
 
 	$.fn.jaCalendar.defaults = {
+		afterSelect: null,
+		periodChanged: null,
 		shortDayNames: true,
 		month: new Date().getMonth(),
 		year: new Date().getFullYear(),
 		allowChangeMonth: true,
+		allowChangeYear: true,
+		usePeriodInput: false,
 		showTodayButton: true,
 		leadingZero: false,
 		highlightToday: true,
 		blurWeekend: true,
 		specialDates: [],
+		shortDayNameLength: 3,
 		selectionMode: "single",
 		todayButtonLabel: "Hoy",
+		goPeriodButtonLabel: "Ir",
 		days: ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"],
 		months: ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
 	};
@@ -358,13 +448,33 @@
 		var $header = $newRow();
 		$header.addClass("header");
 		var $headerTh = $("<th />");
-		var $headerSpan = $("<span class='header-label'>"
-						+ $.fn.jaCalendar.period(settings, selectedYear, selectedMonth)
-						+ "</span>");
+		
+		var $headerSpan = $("<span class='header-label'></span>");
+		
+		if (!settings.usePeriodInput)
+		{
+			$headerSpan.html($.fn.jaCalendar.period(settings, selectedYear, selectedMonth));
+			$headerSpan.appendTo($headerTh);
+		}
+		else
+		{
+			var $headerMonths = $("<select class='month-list'></select>");
+			$.each(settings.months, function(i, month) {
+				$("<option " + (i+1 == settings.month ? "selected" : "") + " value='" + i + "'>" + month + "</option>").appendTo($headerMonths);
+			});
+			
+			var $headerYear = $("<input type='text' maxlength='4' size='4' class='year-input' value='" + selectedYear + "' />");
+			
+			var $headerGoPeriod = $("<button class='go-period-button'>" + settings.goPeriodButtonLabel + "</button>");
+			
+			$headerMonths.appendTo($headerTh);
+			$headerYear.appendTo($headerTh);
+			$headerGoPeriod.appendTo($headerTh);
+		}
+		
 		var $headerBtnPrev = $("<button class='prev-month'>&lt;</button>");
 		var $headerBtnNext = $("<button class='next-month'>&gt;</button>");
 		$headerBtnPrev.appendTo($headerTh);
-		$headerSpan.appendTo($headerTh);
 		$headerBtnNext.appendTo($headerTh);
 		$headerTh.attr("colspan", 7);
 		$headerTh.appendTo($header);
@@ -374,7 +484,7 @@
 		$.each(settings.days, function(i, d) {
 			if (settings.shortDayNames)
 			{
-				d = d.substr(0, 3);
+				d = d.substr(0, settings.shortDayNameLength);
 			}
 			$("<th>" + d + "</th>").appendTo($tr);
 		});
@@ -456,10 +566,10 @@
 						$($days[i]).addClass("selected");
 					}
 					
-					$calendar.data("selectedDate.jaCalendar", {from: $calendar.data("selectedDate.jaCalendar").from, to: $($days[i]).data("date")});
+					$calendar.data("selectedDate.jaCalendar", {from: fromDate, to: $($days[i]).data("date")});
 				}
 			break;
 		}
-		console.info($calendar.data("selectedDate.jaCalendar"));
+		$calendar.trigger("selectedDateChanged");
 	}
 })(jQuery);

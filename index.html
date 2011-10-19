@@ -22,7 +22,9 @@
 			leadingZero: true,
 			highlightToday: false,
 			blurWeekend: true,
+			shortDayNameLength: 2,
 			selectionMode: "single",
+			usePeriodInput: true,
 			specialDates: [
 				{
 					dateClass: "happydays",
@@ -34,7 +36,12 @@
 					selectable: false,
 					dates: ['03/10/2011']
 				}
-			]
+			],
+			selectedDateChanged: function(date, dateType)
+			{
+				console.info(date);
+				console.info(dateType);
+			}
 		});
 
 		$("#calendar2").jaCalendar({
@@ -56,7 +63,12 @@
 					selectable: false,
 					dates: ['03/10/2011']
 				}
-			]
+			],
+			selectedDateChanged: function(date, dateType)
+			{
+				console.info(date);
+				console.info(dateType);
+			}			
 		});
 	</script>
 </body>
