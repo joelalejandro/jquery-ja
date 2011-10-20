@@ -480,6 +480,7 @@
 		specialDates: [],
 		shortDayNameLength: 3,
 		selectionMode: "single",
+		maxRangeLength: -1,
 		todayButtonLabel: "Hoy",
 		goPeriodButtonLabel: "Ir",
 		days: ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"],
@@ -601,18 +602,22 @@
 					
 					if (fromIndex < 0) fromIndex = 0;
 					
+					var d = 0;
+					settings.maxRangeLength = settings.maxRangeLength == -1 ? toIndex : settings.maxRangeLength;
+					
 					for (var i = fromIndex;
 							 i <= toIndex;
 							 i++)
 					{
-						if (!$($days[i]).hasClass("selectable"))
+						if (!$($days[i]).hasClass("selectable") || d >= settings.maxRangeLength)
 						{
 							$calendar.data("selectedDate.jaCalendar", {from: fromDate, to: $($days[i - 1]).data("date")});
 							break;
 						}
 						
 						$($days[i]).addClass("selected");
-					}
+						d++;
+					}						
 					
 					$calendar.data("selectedDate.jaCalendar", {from: fromDate, to: $($days[i]).data("date")});
 				}
