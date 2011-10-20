@@ -598,17 +598,22 @@
 				else
 				{
 					var fromDate = $calendar.data("selectedDate.jaCalendar").from;
+					var toDate = $(this).data("date");
 					var $days = $("td.date", $calendar);
 					var $firstDay = $("td.date.selected", $calendar);
 					var fromIndex = $days.index($firstDay);
 					var toIndex = $days.index($(this));
+					var dateDiff = (+toDate - +fromDate) / 1000 / 60 / 60 /24;
 					
 					if (fromIndex < 0) fromIndex = 0;
 					
 					var d = 0;
 					settings.maxRangeLength = settings.maxRangeLength == -1 ? toIndex : settings.maxRangeLength;
+					
+					if (+toDate <= +fromDate)
+						return;
 
-					if (toIndex - fromIndex < settings.minRangeLength - 1 && settings.minRangeLength != -1)
+					if (dateDiff < settings.minRangeLength - 1 && settings.minRangeLength != -1)
 						return;
 
 					for (var i = fromIndex;
