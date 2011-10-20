@@ -480,6 +480,7 @@
 		specialDates: [],
 		shortDayNameLength: 3,
 		selectionMode: "single",
+		minRangeLength: -1,
 		maxRangeLength: -1,
 		todayButtonLabel: "Hoy",
 		goPeriodButtonLabel: "Ir",
@@ -586,7 +587,9 @@
 				$(this).addClass("selected");
 			break;
 			case "range":
-				if ($calendar.data("selectedDate.jaCalendar") === undefined || ($calendar.data("selectedDate.jaCalendar").from != null && $calendar.data("selectedDate.jaCalendar").to != null))
+				if ($calendar.data("selectedDate.jaCalendar") === undefined
+					|| ($calendar.data("selectedDate.jaCalendar").from != null
+						&& $calendar.data("selectedDate.jaCalendar").to != null))
 				{
 					$calendar.data("selectedDate.jaCalendar", {from: $(this).data("date"), to: null});
 					$("td.date", $calendar).removeClass("selected");
@@ -604,7 +607,10 @@
 					
 					var d = 0;
 					settings.maxRangeLength = settings.maxRangeLength == -1 ? toIndex : settings.maxRangeLength;
-					
+
+					if (toIndex - fromIndex < settings.minRangeLength - 1 && settings.minRangeLength != -1)
+						return;
+
 					for (var i = fromIndex;
 							 i <= toIndex;
 							 i++)
