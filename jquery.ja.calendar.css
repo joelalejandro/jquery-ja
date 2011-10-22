@@ -41,6 +41,7 @@
  **********************************************************************************
  */
  
+ /** to-do: documentation **/
 .calendar .prev-month {float: left;}
 .calendar .next-month {float: right;}
 .calendar .header span {position: relative; top: 5px;}
