@@ -49,7 +49,7 @@
 .calendar .weekend { color: gray;}
 .calendar .today { background: yellow; }
 .calendar .date:hover {cursor: pointer; background: #e0e0e0;}
-.calendar .date.selected {background: red;}
+.calendar .date.selected {background: teal; color: white; font-weight: bold;}
 .calendar .date, .calendar .days {font-size: 8pt; padding: 5px; width: 20px; text-align: center;}
 .calendar .header, .calendar .footer { background: orange; color: #ffffff; font-size: 10pt;}
 .calendar .footer { text-align: center; }
