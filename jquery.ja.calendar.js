@@ -1278,7 +1278,14 @@
 					
 					// Start date must be before the end date.
 					if (+toDate <= +fromDate)
+					{
+						// For ease of use, assume new range. Save it and select it as the first day.
+						$calendar.data("selectedDate.jaCalendar", {from: $(this).data("date"), to: null});
+						$("td.date", $calendar).removeClass("selected");
+						$(this).addClass("selected");
+
 						return;
+					}
 
 					// Range must be within limits.
 					if (dateDiff < settings.minRangeLength - 1 && settings.minRangeLength != -1)
@@ -1300,7 +1307,7 @@
 					}						
 					
 					// Save the range.
-					$calendar.data("selectedDate.jaCalendar", {from: fromDate, to: $($days[i]).data("date")});
+					$calendar.data("selectedDate.jaCalendar", {from: fromDate, to: $($days[i-1]).data("date")});
 
 					// Invoke callback after changing the selected range.
 					$calendar.trigger("selectedRangeChanged");
