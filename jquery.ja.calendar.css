@@ -48,10 +48,10 @@
 .calendar .header span {position: relative; top: 5px;}
 .calendar {font-family: Tahoma; border: 1px solid orange; border-spacing: 1px;}
 .calendar .weekend { color: gray;}
-.calendar .today { background: yellow; }
-.calendar .date:hover {cursor: pointer; background: #e0e0e0;}
+.calendar .today { background: #f60; color: #fff; }
+.calendar .date:hover {cursor: pointer; background: #e0e0e0; color: #333;}
 .calendar .date.selected {background: teal; color: white; font-weight: bold;}
 .calendar .date, .calendar .days {font-size: 8pt; padding: 5px; width: 20px; text-align: center;}
 .calendar .header, .calendar .footer { background: orange; color: #ffffff; font-size: 10pt; text-align: center!important; }
 .calendar .footer { text-align: center; }
-.calendar .date.past { color: #e0e0e0; }
+.calendar .date.past, .calendar .date.past:hover { background: inherit; color: #e0e0e0; cursor: no-drop;}
