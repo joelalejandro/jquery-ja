@@ -119,7 +119,7 @@
 	})();
 
 	/***
-	 * Function: Date.toDayMonthYearDate
+	 * Function: toDayMonthYearDate
 	 *
 	 * Converts a Date object to its string representation, using the DD/MM/YYYY format.
 	 *
@@ -132,16 +132,14 @@
 	 * Returns:
 	 *   (string) A formatted date string.
 	 **/
-	(function() {
-		Date.prototype.toDayMonthYearDate = function()
-		{
-			return this.getDate() < 10 ? '0' + this.getDate() : this.getDate()
-			     + '/'
-			     + this.getMonth() < 10 ? '0' + this.getMonth() : this.getMonth()
-			     + '/'
-			     + this.getFullYear();
-		};
-	})();
+	Date.prototype.toDayMonthYearDate = function()
+	{
+		return (this.getDate() < 10 ? '0' + this.getDate() : this.getDate())
+		     + '/'
+		     + (this.getMonth() + 1 < 10 ? '0' + (this.getMonth() + 1) : this.getMonth() + 1)
+		     + '/'
+		     + this.getFullYear();
+	};
 
 	/***
 	 * Section: Plugin Private Functions
