@@ -366,6 +366,10 @@
 							if (!specialDates[sdIndex].selectable)
 								$thisDay.removeClass("selectable");
 						}
+
+						// Does the calendar allows past date?
+						if (!settings.allowPastDates && +thisDate < +todayDate)
+							$thisDay.removeClass("selectable").addClass("past");
 					}
 
 					// Select the last day of the month.
@@ -1002,6 +1006,16 @@
 		 *	maxRangeLength: (number)
 		 */
 		maxRangeLength: -1,
+
+		/**
+		 * Property: allowPastDates
+		 *
+		 * Sets whether to allow dates before today or not. Defaults to false.
+		 *
+		 * Usage:
+		 *	allowPastDates: true|false
+		 */
+		allowPastDates: false,
 
 		/**
 		 * Group: Localisation
